@@ -160,7 +160,6 @@ class _Manager:
             del_ids.remove(":".join([counter, d]))
             self.db.dadd("Metadata", ("deleted_id", del_ids))
 
-
         print(row, dictionary)
         print(self.db.dgetall("Metadata"))
 
@@ -175,12 +174,12 @@ class dbTable(_Manager):
         super().__init__(db_path, db_name, table_name, enable_key, encrypt_key, sig)
 
     def insert(self, *, row=None, _dict=None, **kwargs):
-        #xx = self.db.dget("Metadata", "deleted_id")
-        #xx.append("34:2")
-        #self.db.dadd("Metadata", ("deleted_id", xx))
+        # xx = self.db.dget("Metadata", "deleted_id")
+        # xx.append("34:2")
+        # self.db.dadd("Metadata", ("deleted_id", xx))
 
-        #print(self.db.dgetall("Metadata"))
-        #print(self.db.dgetall("d_tree"))
+        # print(self.db.dgetall("Metadata"))
+        # print(self.db.dgetall("d_tree"))
 
         if self.db.dexists("Metadata", "key") and self.db.dget("Metadata", "key") != _hash_(self._default_key):
             raise TypeError(f"Access denied, the encryption key {self._default_key}"
@@ -198,75 +197,12 @@ class dbTable(_Manager):
             second = kwargs
             dictionary.update(second)
         else:
-<<<<<<< HEAD
             if _dict is not None:
                 dictionary = _dict
             else:
                 dictionary = kwargs
 
         self.set(row, dictionary)
-=======
-            raise dbTableError(f"Column's data type is not supported. {type(column)}.")
-        output_data = None
-        check = False
-        pass_id = _hash_(str(row))
-        pre_check = False
-
-        with open(self.__D_Tree_backup if _is_backup(file=self.__D_Tree) else self.__D_Tree, "rb") as r:
-            try:
-                while dictionary := pickle.load(r):
-                    if dictionary.__contains__(pass_id):
-                        dictionary = dictionary.__getitem__(pass_id)
-                        value = dictionary.split(':')
-                        check = True
-                        break
-            except EOFError:
-                pass
-
-        if check:
-            data_path = os.path.join(f"{self.__db}", f"_D_{value[0]}.pickle")
-            backup_data_path = os.path.join(f"{self.__db}", f"backup_D_{value[0]}.pickle")
-
-            with open(backup_data_path if _is_backup(file=data_path) else data_path, "rb") as R:
-                try:
-                    while data_dict := pickle.load(R):
-                        if data_dict.__contains__(pass_id):
-                            data_dict = data_dict.__getitem__(pass_id)
-                            pre_check = True
-                            break
-                except EOFError:
-                    pass
-
-            if pre_check:
-                data_dict = eval(_decrypt(data_dict, self.default_key))
-                if column is None:
-                    output_data = data_dict[f"{str(row)}"]
-                    check = True
-                else:
-                    if data_dict[f"{str(row)}"].__contains__(str(column)):
-                        output_data = data_dict[f"{row}"].__getitem__(str(column))
-                        check = True
-                    else:
-                        if call:
-                            raise NotFound(f"Column {column} does not exist.")
-                        else:
-                            check = False
-
-        if call is True and check is False:
-            raise NotFound(f"Row {row} does not exist.")
-
-        return output_data, check, (data_dict if check else None), (dictionary if check else None)
-
-    def find(self, row=None, column=None):
-        # find data cell
-        return self.__find(row, column)[0]
-
-    def row_stringify(self, row=None, indent=2, sort_keys=False):
-        if self.check(row):
-            return json.dumps(self.__find(row)[0], indent=indent, sort_keys=sort_keys)
-        else:
-            raise NotFound(f"Row {row} does not exist.")
->>>>>>> parent of 73e9da8... fix
 
     def find(self, *, row, column):
         pass
@@ -277,7 +213,7 @@ class dbTable(_Manager):
     def remove(self, *, row, column):
         pass
 
-    def drop(self, *,  row):
+    def drop(self, *, row):
         pass
 
     def row_stringify(self):
@@ -289,189 +225,6 @@ class dbTable(_Manager):
     def __len__(self):
         pass
 
-    def tables(self):
-<<<<<<< HEAD
-        pass
-=======
-        # search through all XML files for table's names
-        files = []
-        # r=root, d=directories, f=files
-        for r, d, f in os.walk(self.path):
-            for file in f:
-                if '.xml' in file:
-                    files.append(os.path.join(r, file))
-        table_names = []
-        for path in files:
-            table_names.append(_XML(path).access(path=True))
-        return table_names
-
-
-class Generate(_Location):
-
-    def __init__(self, db_path=current_directory, db_name="_dbTables_",
-                 table_name=None, encrypt_key=default_key, columns=None):
-        super().__init__(db_path, db_name)
-
-        self.default_key = encrypt_key
-        self.db_name = db_name
-        self.db_path = db_path
-        self.__TableName = table_name
-        self.__Column = (columns,) if isinstance(columns, str) else columns
-        self.__Table_location = os.path.join(f"{self.path}", f"{_hash_(self.__TableName)}")
-        self.__db = os.path.join(f"{self.__Table_location}", "_Database_")
-        self.__MetaData = os.path.join(f"{self.__Table_location}", "_MetaData_")
-        self.__XML_ts = os.path.join(f"{self.__MetaData}", f"T_state.xml")
-        self.__D_Tree = os.path.join(f"{self.__MetaData}", f"D_Tree.pickle")
-        self.__D_Tree_backup = os.path.join(f"{self.__MetaData}", "D_Tree_backup.pickle")
-        self.__row_collections = os.path.join(f"{self.__MetaData}", f"rows.pickle")
-        self.__row_collections_backup = os.path.join(f"{self.__MetaData}", f"rows_backup.pickle")
-        self.__Track = os.path.join(f"{self.__MetaData}", "Track.pickle")
-        self.__insert = _Insert(db_path=self.db_path, db_name=self.db_name, table_name=self.__TableName,
-                                encrypt_key=self.default_key)
-
-        if self.__Column is None:
-            raise TypeError("Column should not be None, use the key argument columns= .")
-
-        if self.__TableName is None:
-            raise TypeError("Table without a name, use the key argument table_name= .")
-
-        if not os.path.isdir(self.__Table_location):
-            # make all files and folders for table's metadata and database
-            os.mkdir(self.__Table_location)
-            os.mkdir(self.__db)
-            os.mkdir(self.__MetaData)
-
-            with open(self.__Track, 'wb') as w:
-                track_dict = {"last_entry": 0, "deleted_id": [], "tree_track": 0}
-                pickle.dump(track_dict, w)
-                os.chmod(self.__Track, stat.S_IREAD)
-            with open(self.__D_Tree_backup, 'wb'):
-                os.chmod(self.__D_Tree_backup, stat.S_IREAD)
-            with open(self.__D_Tree, "wb"):
-                os.chmod(self.__D_Tree, stat.S_IREAD)
-            with open(self.__row_collections, "wb"):
-                os.chmod(self.__row_collections, stat.S_IREAD)
-            with open(self.__row_collections_backup, "wb"):
-                os.chmod(self.__row_collections_backup, stat.S_IREAD)
-
-            """writing XML file for table's info"""
-            root = ET.Element("Meta-Data")
-            tree = ET.ElementTree(root)
-            tree.write(self.__XML_ts)
-            tree = ET.parse(self.__XML_ts)
-            root = tree.getroot()
-            doc = ET.SubElement(root, "Table", attrib={"Name": f"{self.__TableName}"})
-            ET.SubElement(doc, "columns").text = f"{self.__Column}"
-            ET.SubElement(doc, "Name").text = f"{self.__TableName}"
-            ET.SubElement(doc, "hashed_key").text = f"{_hash_(self.default_key)}"
-            tree.write(self.__XML_ts)
-            os.chmod(self.__XML_ts, stat.S_IREAD)
-
-    def __check(self, row, column_):
-        # check if data ,rows, columns exist in table, to prevent duplication.
-        check = False
-        data_dict = None
-        pass_id = _hash_(str(row))
-        value = []
-        with open(self.__D_Tree_backup if _is_backup(file=self.__D_Tree) else self.__D_Tree, "rb") as r:
-            try:
-                while dictionary := pickle.load(r):
-                    if dictionary.__contains__(pass_id):
-                        dictionary = dictionary.__getitem__(pass_id)
-                        value = dictionary.split(':')
-                        check = True
-                        break
-            except EOFError:
-                pass
-
-        if check:
-            data_path = os.path.join(f"{self.__db}", f"_D_{value[0]}.pickle")
-            backup_data_path = os.path.join(f"{self.__db}", f"backup_D_{value[0]}.pickle")
-
-            with open(backup_data_path if _is_backup(file=data_path) else data_path, "rb") as R:
-                try:
-                    while data_dict := pickle.load(R):
-                        if data_dict.__contains__(_hash_(str(row))):
-                            data_dict = data_dict.__getitem__(_hash_(str(row)))
-                            db_check = True
-                            break
-                except EOFError:
-                    db_check = False
-                    check = False
-
-            if db_check:
-                # check if a column already exists
-                data_dict = eval(_decrypt(data_dict, self.default_key))
-                for col in column_:
-                    if data_dict[f"{row}"].__contains__(str(col)):
-                        raise dbTableError(
-                            f"the cell is already available for column: {col} and row: {row} ")
-
-        return check, (data_dict if check and db_check else None), (dictionary if check else None)
-
-    def _db_(self, data, row, columns):
-        # this method store data in _bd folder
-
-        if (check_id_state := self.__check(row, columns))[0]:
-            # update
-            table_dict = check_id_state[1]
-            [table_dict[f"{row}"].__setitem__(str(columns[i]), data[i]) for i in range(len(data))]
-            self.__insert.insert(_data_=table_dict, row=row, call=True, path=check_id_state[2])
-            # call=True means update or add to a row that already exists
-        else:
-            fb_state_ = _is_backup(file=self.__row_collections)
-            _file_ = self.__row_collections_backup if fb_state_ else self.__row_collections
-            os.chmod(_file_, stat.S_IWRITE)
-            with open(_file_, "ab") as a:
-                pickle.dump(_encrypt(str(row), self.default_key), a)
-            os.chmod(_file_, stat.S_IREAD)
-
-            table_dict = {f"{row}": dict()}
-            [table_dict[f"{row}"].__setitem__(str(columns[i]), data[i]) for i in range(len(data))]
-
-            # insert
-            id_path = self.__insert.insert(_data_=table_dict, row=row)  # call=False (default) means a new row
-            # insert the data dictionary in db files and return its path
-            with open(self.__Track, 'rb') as r:
-                track_dict = pickle.load(r)
-
-            counter = track_dict["tree_track"]
-            if counter == 1000:
-                # Table limit (1k rows) for speed and efficiency
-                raise dbTableError("you have reached table limit of one Thousand rows.")
-
-            self.__insert.track(key="tree_track")
-            # D-Tree data scheme {"hashed row": path}
-            (tree_dict := dict()).__setitem__(_hash_(str(row)), id_path) # ===========
-
-            fb_state = _is_backup(file=self.__D_Tree)
-
-            file = self.__D_Tree_backup if fb_state else self.__D_Tree
-            os.chmod(file, stat.S_IWRITE)
-            with open(file, "ab") as a:
-                pickle.dump(tree_dict, a)
-            os.chmod(file, stat.S_IREAD)
-
-    def insert(self, data, row=None, columns=None):
-        try:
-            # check Table State
-            table_state = _XML(self.__XML_ts).access()
-            ts_column = table_state[0]
-
-            if table_state[1] != _hash_(self.default_key):
-                # check is the encryption key is valid
-                raise dbTableError(f"Access denied, the encryption key {self.default_key} "
-                                   f"is not valid for table {self.__TableName}.")
-        except Exception:
-            raise dbTableError(f"No such Table {self.__TableName}")
-
-        # Converting the input
-
-        columns = (columns,) if isinstance(columns, str) else (str(columns),) if isinstance(columns, int) else columns
-        row = str(row) if isinstance(row, int) else row
-        data = data if isinstance(data, tuple) else (data,)
->>>>>>> parent of 73e9da8... fix
-
     def drop_table(self):
         pass
 
@@ -480,5 +233,5 @@ class Generate(_Location):
 
 
 db = dbTable(table_name="myTable", encrypt_key="hh")
-#db.check()
+# db.check()
 db.insert(row=1, _dict={'ww': 1}, a=2, b=3)
