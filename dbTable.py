@@ -16,7 +16,7 @@ import onetimepad
 import xml.etree.cElementTree as ET
 
 """
-dbTable is a lightweight and efficient SQL database file management that can store encrypted data in Tables 
+dbTable is a lightweight SQL database file management that can store encrypted data in Tables 
 using rows and columns.
 With dbTable you can store data in files and manage it, each Table can store up to one Thousand Rows
 for speed and efficiency.
@@ -99,11 +99,11 @@ Extract class =>  find data, check data, update data, fetchall rows, fetchall co
 """
 
 current_directory = os.path.dirname(os.path.realpath(__file__))
-default_key = "37e1f5637615c8ab9474184a2970fdcb8814303f49e56deb6c31cb7a1c12655c"
+default_key = "435e6a8cad566114c8641af7871bf20ddf8216881f6d1b7b1681c6eb9ffd7b8a"
 
 
 def _hash_(dir_):
-    return hashlib.sha256(dir_.encode()).hexdigest()[:40]
+    return hashlib.sha256(dir_.encode()).hexdigest()[:45]
 
 
 def _encrypt(data, key_):
